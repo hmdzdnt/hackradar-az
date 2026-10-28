@@ -66,7 +66,7 @@ export async function handle(request,env,ctx={waitUntil(){}},fetcher=fetch) {
   if (request.method!==(url.pathname==='/api/assistant'?'POST':'GET')) return respond({error:'Metod icazəli deyil.'},405);
   let f,question;
   try { if(url.pathname==='/api/events') f=filters(url.searchParams); if(url.pathname==='/api/assistant') question=await readQuestion(request); }
-  catch { return respond({error:'Sorğu yanlışdır. Sual 3–600 simvol olmalıdır.'},400); }
+  catch { return respond({error:url.pathname==='/api/events'?'Hakaton filtrləri yanlışdır. Parametrləri yoxlayın.':'Sorğu yanlışdır. Sual 3–600 simvol olmalıdır.'},400); }
   try {
     let quota;
     if(question) {

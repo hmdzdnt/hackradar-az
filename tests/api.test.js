@@ -14,6 +14,28 @@ test('public events, stats, details and no write routes',async()=>{
  assert.equal((await handle(req('/api/events/00000000-0000-0000-0000-000000000000'),env,ctx,database)).status,404);
  assert.equal((await handle(req('/api/events',{method:'POST'}),env,ctx,database)).status,405);
 });
+test('frontend archive GET returns active and archived events without assistant configuration',async()=>{
+ const archived={...e,id:'87654321-1234-1234-1234-123456789abc',start_date:'2020-01-01',archived:true};
+ let reads=0;
+ const r=await handle(req('/api/events?archive=all',{headers:{Origin:env.ALLOWED_ORIGIN}}),{...env,QUOTAS:null,RATE_LIMIT_SALT:''},ctx,async()=>{reads++;return Response.json([e,archived]);});
+ assert.equal(r.status,200);
+ assert.equal(r.headers.get('Access-Control-Allow-Origin'),env.ALLOWED_ORIGIN);
+ const data=await r.json();
+ assert.deepEqual(data.events.map(event=>event.id),[e.id,archived.id]);
+ assert.equal(data.stats.total,2);
+ assert.equal(reads,1);
+});
+test('event filter errors are distinct from assistant question validation',async()=>{
+ const unexpected=async()=>assert.fail('Invalid requests must not query the database');
+ for(const path of ['/api/events?archive=invalid','/api/events?unexpected=all']) {
+  const r=await handle(req(path),env,ctx,unexpected);
+  assert.equal(r.status,400);
+  assert.equal((await r.json()).error,'Hakaton filtrləri yanlışdır. Parametrləri yoxlayın.');
+ }
+ const r=await handle(req('/api/assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:'a'})}),env,ctx,unexpected);
+ assert.equal(r.status,400);
+ assert.equal((await r.json()).error,'Sorğu yanlışdır. Sual 3–600 simvol olmalıdır.');
+});
 test('filters, origins, dates and identifiers validated before DB access',async()=>{
  let called=false;const fetcher=()=>{called=true;throw new Error('unexpected');};
  for(const path of ['/api/events?age=-1','/api/events?format=sql','/api/events?from=2026-02-30','/api/events?from=2027-01-01&to=2026-01-01','/api/events/not-a-uuid'])assert.equal((await handle(req(path),env,ctx,fetcher)).status,400);

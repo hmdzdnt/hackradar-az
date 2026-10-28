@@ -9,8 +9,11 @@ const mf=new Miniflare(convertV4MiniflareOptions({workers:[{
 }]}));
 try {
  const health=await mf.dispatchFetch('https://api.example/api/health');assert.equal(health.status,200);
- const r=await mf.dispatchFetch('https://api.example/api/events?archive=all');assert.equal(r.status,200);
+ const r=await mf.dispatchFetch('https://api.example/api/events?archive=all',{headers:{Origin:'https://frontend.example'}});assert.equal(r.status,200);
+ assert.equal(r.headers.get('Access-Control-Allow-Origin'),'https://frontend.example');
  const result=await r.json();assert.equal(result.events.length,data.events.length);
+ const invalid=await mf.dispatchFetch('https://api.example/api/events?archive=invalid');assert.equal(invalid.status,400);
+ assert.equal((await invalid.json()).error,'Hakaton filtrləri yanlışdır. Parametrləri yoxlayın.');
  const detail=await mf.dispatchFetch('https://api.example/api/events/'+data.events[0].id);assert.equal(detail.status,200);
  for(let i=0;i<9;i++) {
   const res=await mf.dispatchFetch('https://api.example/api/assistant',{method:'POST',headers:{'Content-Type':'application/json','CF-Connecting-IP':'203.0.113.12'},body:JSON.stringify({question:'Hansı hakatonlar var?'})});
