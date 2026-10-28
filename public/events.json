@@ -1,0 +1,58 @@
+{
+  "events": [
+    {
+      "title": "Registration has opened for the “CyberCell Hackathon,” organized by BEU and Azercell.",
+      "organizer": "Baku Engineering University (BEU) and Azercell",
+      "description": "Baku Engineering University (BEU) and Azercell are jointly organizing a student hackathon called “CyberCell.” The competition, covering cybersecurity and artificial intelligence topics, will take place at BEU on October 18–19 this year.",
+      "city": null,
+      "format": null,
+      "start_date": "2025-10-18",
+      "end_date": "2025-10-19",
+      "registration_deadline": null,
+      "registration_url": "https://forms.gle/xiGf7DT5TPAo45Yd9",
+      "official_source_url": "https://beu.edu.az/en/media/announcements/registration-has-opened-for-the-cybercell-hackathon-organized-by-beu-and-azercell",
+      "age_min": null,
+      "age_max": null,
+      "age_restrictions": "Students from BEU as well as other universities may participate in the hackathon.",
+      "team_requirements": "Each team may have up to 3 members.",
+      "prize_info": "● 1st place – 4000 AZN",
+      "has_prize": true,
+      "topics": [
+        "Süni intellekt",
+        "Kibertəhlükəsizlik"
+      ],
+      "registration_status": "closed",
+      "archived": true,
+      "last_verified_at": "2026-10-28T21:08:14.877693+00:00",
+      "id": "ddd883dd-2b42-5441-becd-f5b9ba9ac02c"
+    },
+    {
+      "title": "SOCAR Hackathon 2026",
+      "organizer": "SOCAR and Caspian AI Institute",
+      "description": "A two-day data science hackathon organised by SOCAR and Caspian AI Institute . The challenge focuses on oil and gas production and geoscience. Participants in teams of up to three will develop an interactive engineering application connecting operational data, prediction and reservoir insight in one engineering workflow.",
+      "city": "Bakı",
+      "format": "onsite",
+      "start_date": "2026-11-21",
+      "end_date": "2026-11-22",
+      "registration_deadline": "2026-11-09T23:59:59+04:00",
+      "registration_url": "https://forms.gle/Bsidfgngdrrnkjsn8",
+      "official_source_url": "https://hackathon.socar.az/",
+      "age_min": 18,
+      "age_max": null,
+      "age_restrictions": "Participants must be 18 years of age or older",
+      "team_requirements": "Teams may have up to three members",
+      "prize_info": "1st place 5,000 AZN 2nd place 3,000 AZN 3rd place 1,500 AZN",
+      "has_prize": true,
+      "topics": [
+        "Süni intellekt",
+        "Enerji"
+      ],
+      "registration_status": "open",
+      "archived": false,
+      "last_verified_at": "2026-10-28T21:08:21.695070+00:00",
+      "id": "7e356510-6df3-523e-8043-0e2ff23b710e"
+    }
+  ],
+  "verifiedAt": "2026-10-28T21:08:21.695070+00:00",
+  "mode": "verified-source-snapshot"
+}

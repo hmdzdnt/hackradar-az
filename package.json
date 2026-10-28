@@ -1,0 +1,34 @@
+{
+  "name": "hackradar-az",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/events.test.js && node tests/api.test.js",
+    "worker:dev": "wrangler dev --config worker/wrangler.toml",
+    "deploy:api": "wrangler deploy --config worker/wrangler.toml",
+    "deploy:pages": "npm run build && wrangler pages deploy dist --project-name hackradar-az",
+    "test:db": "node scripts/test-db.mjs",
+    "check": "npm test && npm run test:db && npm run test:runtime && npm run build",
+    "test:runtime": "wrangler deploy --config worker/wrangler.toml --dry-run --outdir ../artifacts/worker && node tests/worker-runtime.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.6.2"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.13",
+    "@tailwindcss/vite": "^4.1.10",
+    "tailwindcss": "^4.1.10",
+    "vite": "^6.3.5",
+    "wrangler": "^4.20.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,34 @@
+name: Discover verified Azerbaijan hackathons
+on:
+  schedule:
+    # Asia/Baku UTC+4: 00:00 / 06:00 / 12:00 / 18:00. GitHub schedules may be delayed.
+    - cron: '0 2,8,14,20 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hackradar-discovery
+  cancel-in-progress: false
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Discover, verify, deduplicate, persist and archive
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python -m discovery.run --output artifacts/discovery.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: discovery-report
+          path: artifacts/discovery.json
+          retention-days: 3
+          if-no-files-found: ignore

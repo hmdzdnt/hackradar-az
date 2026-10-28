@@ -1,0 +1,43 @@
+[
+  {
+    "name": "Bakı Mühəndislik Universiteti",
+    "url": "https://beu.edu.az/en/media/announcements",
+    "kind": "html",
+    "trusted": true,
+    "hosts": [
+      "beu.edu.az",
+      "www.beu.edu.az"
+    ],
+    "seeds": [
+      "https://beu.edu.az/en/media/announcements/registration-has-opened-for-the-cybercell-hackathon-organized-by-beu-and-azercell"
+    ],
+    "context": "Azerbaijan"
+  },
+  {
+    "name": "Bakı Metropoliteni",
+    "url": "https://metro.gov.az/az/social-platform",
+    "kind": "html",
+    "trusted": true,
+    "hosts": [
+      "metro.gov.az",
+      "www.metro.gov.az"
+    ],
+    "seeds": [
+      "https://metro.gov.az/az/social-platform/4718/metro-hackathonun-son-qeydiyyat-tarixi-yenilendi"
+    ],
+    "context": "Azerbaijan",
+    "enabled": false,
+    "note": "Disabled: article returned HTTP 404 during initial live check."
+  },
+  {
+    "name": "SOCAR Hackathon",
+    "url": "https://hackathon.socar.az/",
+    "kind": "html",
+    "trusted": true,
+    "hosts": [
+      "hackathon.socar.az"
+    ],
+    "seeds": [],
+    "context": "Azerbaijan"
+  }
+]

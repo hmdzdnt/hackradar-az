@@ -1,0 +1,24 @@
+node_modules/
+dist/
+.venv/
+.env
+.env.*
+!.env.example
+.dev.vars
+.wrangler/
+__pycache__/
+*.pyc
+artifacts/
+
+# Additional local credential files
+.dev.vars.*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.json
+.netrc
+.npmrc
+.aws/
+.ssh/
