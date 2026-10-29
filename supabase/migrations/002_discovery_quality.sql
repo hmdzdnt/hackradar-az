@@ -15,12 +15,54 @@ returns text language sql stable set search_path=public as $$
  when coalesce(p_start_at,(p_start_date::timestamp at time zone 'Asia/Baku')) <= p_now then 'ongoing'
  when p_start_date is not null or p_start_at is not null then 'upcoming' else 'unknown' end;
 $$;
--- Only genuine explicit timestamps are stored in *_at. Date-only events keep null times.
--- Legacy evidence can safely restore explicit timestamps recorded before this migration.
-update public.hackathons set
- start_at=(evidence->'timing'->>'start_at')::timestamptz,
- end_at=(evidence->'timing'->>'end_at')::timestamptz
-where evidence ? 'timing';
+-- Only explicit ISO timestamps with an offset are eligible for backfill.
+-- JSON nulls, wrong types, malformed/calendar-invalid values and ambiguous local
+-- times stay null. Use a session-local parser; expose no public parsing RPC.
+create function pg_temp.hackradar_evidence_timestamp(p_value jsonb)
+returns timestamptz language plpgsql set search_path=pg_catalog as $$
+declare
+ raw_value text;
+ parsed_value timestamptz;
+begin
+ if jsonb_typeof(p_value) is distinct from 'string' then return null; end if;
+ raw_value=btrim(p_value #>> '{}');
+ if raw_value !~* '^[0-9]{4}-[0-9]{2}-[0-9]{2}T([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9](\.[0-9]{1,6})?)?(Z|[+-][0-9]{2}:[0-9]{2})$' then
+  return null;
+ end if;
+ begin
+  parsed_value=raw_value::timestamptz;
+ exception when sqlstate '22007' or sqlstate '22008' or sqlstate '22009' then
+  return null;
+ end;
+ if not isfinite(parsed_value) then return null; end if;
+ return parsed_value;
+end $$;
+
+with parsed as materialized (
+ select id,start_date,end_date,
+  pg_temp.hackradar_evidence_timestamp(evidence->'timing'->'start_at') as parsed_start,
+  pg_temp.hackradar_evidence_timestamp(evidence->'timing'->'end_at') as parsed_end
+ from public.hackathons
+ where jsonb_typeof(evidence)='object' and jsonb_typeof(evidence->'timing')='object'
+), aligned as (
+ select id,
+  case when start_date is null or (parsed_start at time zone 'Asia/Baku')::date=start_date then parsed_start end as valid_start,
+  case when end_date is null or (parsed_end at time zone 'Asia/Baku')::date=end_date then parsed_end end as valid_end
+ from parsed
+ -- Contradictory ranges are left for review rather than aborting the migration.
+ where parsed_start is null or parsed_end is null or parsed_end>parsed_start
+)
+update public.hackathons h set start_at=a.valid_start,end_at=a.valid_end
+from aligned a
+where h.id=a.id and (a.valid_start is not null or a.valid_end is not null);
+
+drop function pg_temp.hackradar_evidence_timestamp(jsonb);
+
+-- Keep invoker RLS effective, including if another permissive SELECT policy is
+-- accidentally added later. No new permissions on evidence or private flags.
+alter table public.hackathons enable row level security;
+create policy published_events_guard on public.hackathons as restrictive
+ for select to anon,authenticated using (published and verified);
 
 grant select(start_at,end_at,event_timezone,announcement_url,location) on public.hackathons to anon,authenticated;
 -- Preserve all existing view columns in their original order, append new fields only.

@@ -11,7 +11,7 @@
     "worker:dev": "wrangler dev --config worker/wrangler.toml",
     "deploy:api": "wrangler deploy --config worker/wrangler.toml",
     "deploy:pages": "npm run build && wrangler pages deploy dist --project-name hackradar-az",
-    "test:db": "node scripts/test-db.mjs",
+    "test:db": "node scripts/test-db.mjs && node scripts/test-migration-safety.mjs",
     "check": "npm test && npm run test:db && npm run test:runtime && npm run build",
     "test:runtime": "wrangler deploy --config worker/wrangler.toml --dry-run --outdir ../artifacts/worker && node tests/worker-runtime.mjs"
   },
