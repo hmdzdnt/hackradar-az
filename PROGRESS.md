@@ -1,29 +1,21 @@
-# HackRadar AZ
+# HackRadar AZ — discovery upgrade (2026-10-29)
 
-- [x] React/Vite/Tailwind project and separate Pages/Worker deployment configurations
-- [x] Supabase migration, publication RLS, private evidence, constraints, indexes and archival
-- [x] Real HTML/RSS/Atom/sitemap connectors, robots/SSRF checks, retries and source tracking
-- [x] Evidence-based extraction, verification, source updates and edition-aware deduplication
-- [x] Public API, validated filters, grounded Gemini selection and deterministic Azerbaijani fallback
-- [x] SQLite Durable Object anonymous quotas and bounded AI budget
-- [x] Responsive dark UI, animated white rounded borders, search, seven filters, details and calendar
-- [x] Scheduled discovery: 02/08/14/20 UTC = 06/12/18/00 Asia/Baku
-- [x] 34 unit tests passed: 19 Python + 15 JavaScript; zero failing
-- [x] Actual migration passed embedded PostgreSQL RLS, private-column, write, uniqueness, date and archive checks
-- [x] Worker bundle and workerd runtime passed, including SQLite 8/min quota enforcement
-- [x] Latest live-source smoke: 2 verified events, 0 source errors; snapshot contains actual SOCAR and BEU announcements
-- [x] Production frontend build passed; fixtures never enter production records
+- [x] Audited the two-record pipeline: two enabled sources, historical seed, unused search queries, weak relevance, date-only archival and candidate-before-write counts.
+- [x] Expanded to eight access-checked official sources; disabled endpoints and unconfigured social/event platforms documented in docs/DISCOVERY.md.
+- [x] Modular HTML, RSS/Atom, sitemap, structured-event and public Telegram announcement intake; reviewed official-link corroboration.
+- [x] Optional AZ/EN/RU official search API, disabled by default; no paid service activated.
+- [x] Evidence-based Azerbaijan venue/eligibility checks, explicit dates/timestamps and quarantine decisions.
+- [x] Independent pre-insert expiry protection, preserved historical rows, stronger event identity and corrected-date updates.
+- [x] Additive migration 002 prepared with exact-time lifecycle, run summaries, public-only RLS and expired-insert guard.
+- [x] Existing-schema fallback tested; explicit timing remains in private evidence until migration.
+- [x] Per-source reports and accurate write outcomes; source isolation and bounded request/candidate budgets.
+- [x] Existing schedule retained: 00/06/12/18 Asia/Baku; manual dispatch supported.
+- [x] 64 unit tests passed (46 Python + 18 JavaScript), embedded PostgreSQL migrations/RLS checks, Worker runtime and frontend build.
+- [x] Eight-source live dry run: 19 HTTP requests, no source errors, SOCAR eligible; no database writes or fabricated events.
+- [x] Final targeted SOCAR smoke passed after validation changes.
 
-## External blockers / verification limits
+## Manual deployment and limitations
 
-No Supabase/Cloudflare/Gemini credentials are configured. Remote Supabase writes, live Gemini calls, GitHub schedule activation and production deployment remain unverified. Local source snapshot and deterministic assistant work without credentials. Browser visual QA was unavailable. Metro connector is explicitly disabled after a real HTTP 404. Initial intermittent DNS failures prompted bounded DNS retries; partial diagnostic runs cannot replace the verified snapshot.
+Apply supabase/migrations/002_discovery_quality.sql once in the existing Supabase project only after review. It has not been applied remotely. The writer works with migration 001; precise end-time publication and persistent run summaries require 002. Existing records are never deleted. Unknown past-start/end candidates can be held in the Actions review artifact without insertion.
 
-Deployment: prepared, not live. Setup instructions and free-tier limits are in README.md.
-
-## API validation fix — 2026-10-28
-
-- Exact live GET `/api/events?archive=all` returned HTTP 200 and 2 events during investigation; its earlier failure could not be reproduced.
-- Fixed the confirmed shared-catch bug that labeled invalid event filters as assistant question-length errors.
-- Added unit coverage for the frontend archive GET without assistant configuration and distinct validation messages; extended the actual Worker runtime check. All checks passed.
-- Live frontend bundle currently has an empty API base and uses its verified snapshot. Frontend configuration and secrets were not changed.
-- Public Pages/API deployments are now confirmed live, superseding the initial deployment status above. This code fix requires a new Worker deployment.
+No secret values were read, changed or committed. Optional search needs manual approval of a genuinely free account, repository secret DISCOVERY_SEARCH_API_KEY and variable DISCOVERY_SEARCH_ENABLED=true; otherwise it stays disabled. Social platforms and event aggregators are not broadly monitored without reviewed compliant endpoints. Freeform/JS-only or ambiguous announcements may require manual review. New records appear through the existing live API; an already-open page needs refresh. Production cloud credentials are unavailable here; no direct Cloudflare deployment or Supabase migration is claimed.
