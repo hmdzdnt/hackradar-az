@@ -68,3 +68,11 @@ test('database reads are paginated rather than silently cut at Supabase default'
 });
 
 test('fallback respects explicit open-registration and age questions',()=>{assert.equal(selectFallback('Qeydiyyat açıqdır?', [e]).length,0);assert.equal(selectFallback('17 yaşım var',[{...e,age_min:18}]).length,0);});
+
+test('lifecycle filter is additive and expired timestamps leave active results',async()=>{
+ const timed={...e,start_date:new Date().toISOString().slice(0,10),end_date:new Date().toISOString().slice(0,10),start_at:new Date(Date.now()-7200000).toISOString(),end_at:new Date(Date.now()-3600000).toISOString()};
+ const data=async()=>Response.json([timed]);
+ const active=await handle(req('/api/events'),env,ctx,data);assert.equal((await active.json()).events.length,0);
+ const archived=await handle(req('/api/events?lifecycle=archived'),env,ctx,data);assert.equal(archived.status,200);const archivedData=await archived.json();assert.equal(archivedData.events.length,1);assert.equal(archivedData.events[0].lifecycle,'archived');assert.equal(archivedData.events[0].registration_status,'closed');
+ assert.equal((await handle(req('/api/events?lifecycle=invalid'),env,ctx,data)).status,400);
+});

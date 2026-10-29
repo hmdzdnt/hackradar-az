@@ -7,7 +7,7 @@ from urllib.parse import urlparse, urljoin
 from urllib.robotparser import RobotFileParser
 import httpx
 
-USER_AGENT = 'HackRadarAZ/1.0 (+https://github.com/hackradar-az; public-event-discovery)'
+USER_AGENT = 'HackRadarAZ/2.0 (+https://github.com/hmdzdnt/hackradar-az; public-event-discovery)'
 MAX_BYTES = 2_000_000
 
 
@@ -21,9 +21,18 @@ def safe_url(url, hosts):
     return url
 
 
+class BudgetExceeded(RuntimeError):pass
+
+class RequestBudget:
+    def __init__(self,limit=80):self.limit=min(80,max(1,limit));self.used=0
+    def consume(self):
+        if self.used>=self.limit:raise BudgetExceeded('Per-run HTTP request budget exhausted')
+        self.used+=1
+
 class Fetcher:
-    def __init__(self, hosts):
+    def __init__(self, hosts, budget=None):
         self.hosts = set(hosts)
+        self.budget = budget
         self.client = httpx.AsyncClient(timeout=httpx.Timeout(20, connect=8), headers={'User-Agent': USER_AGENT}, follow_redirects=False)
         self.robots = {}
         self.last = {}
@@ -52,6 +61,7 @@ class Fetcher:
             self.last[host] = time.monotonic()
             for attempt in range(3):
                 try:
+                    if self.budget:self.budget.consume()
                     async with self.client.stream('GET', url) as r:
                         if r.status_code in (301, 302, 303, 307, 308):
                             url = urljoin(url, r.headers.get('location', ''))

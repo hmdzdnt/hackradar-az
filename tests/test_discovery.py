@@ -23,7 +23,7 @@ class ExtractionTests(unittest.TestCase):
         e=self.event()
         self.assertEqual(e['start_date'],'2026-11-21')
         self.assertEqual(e['end_date'],'2026-11-22')
-        self.assertIsNone(e['city']); self.assertIsNone(e['age_min']); self.assertIsNone(e['organizer'])
+        self.assertEqual(e['city'],'Bakı'); self.assertIsNone(e['age_min']); self.assertIsNone(e['organizer'])
         self.assertEqual(e['registration_status'],'open')
         self.assertEqual(e['registration_deadline'],'2026-11-09T23:59:59+04:00')
         self.assertEqual(verify(e,SOURCE,today=date(2026,10,28)),[])
@@ -53,19 +53,21 @@ class ExtractionTests(unittest.TestCase):
         b['start_date']='2027-11-21';b['fingerprint']=fingerprint(b)
         self.assertFalse(duplicate(a,b))
         b['official_source_url']=URL
-        self.assertTrue(duplicate(a,b))
+        self.assertFalse(duplicate(a,b))
     def test_archive_without_fabricating_deadline(self):
         e=self.event();e['registration_deadline']=None
         verify(e,SOURCE,today=date(2027,1,1))
         self.assertTrue(e['archived']);self.assertEqual(e['registration_status'],'closed');self.assertIsNone(e['registration_deadline'])
     def test_jsonld_and_no_xss_url(self):
-        data={'@type':'Event','name':'Fixture Hackathon','startDate':'2026-11-21','location':{'address':{'addressLocality':'Bakı'}},'eventAttendanceMode':'https://schema.org/OnlineEventAttendanceMode'}
+        data={'@type':'Event','name':'Fixture Hackathon','startDate':'2026-11-21','endDate':'2026-11-22','location':{'address':{'addressLocality':'Bakı'}},'eventAttendanceMode':'https://schema.org/OnlineEventAttendanceMode'}
         html='<h1>Fixture Hackathon</h1><script type="application/ld+json">'+json.dumps(data)+'</script><p>Azerbaijan</p><p>Registration is open <a href="javascript:alert(1)">register</a></p>'
         e=extract(html,URL,SOURCE)
         self.assertEqual(e['format'],'online');self.assertIsNone(e['registration_url']);self.assertEqual(verify(e,SOURCE),[])
     def test_report_and_non_azerbaijan_rejected(self):
         self.assertIsNone(extract('<h1>Students win Hackathon</h1>',URL,SOURCE))
-        self.assertIsNone(extract('<h1>Paris Hackathon</h1><p>France</p>',URL,{**SOURCE,'context':''}))
+        e=extract('<h1>Paris Hackathon</h1><p>France</p>',URL,{**SOURCE,'context':''})
+        verify(e,SOURCE)
+        self.assertEqual(e['evidence']['review']['decision'],'rejected')
     def test_source_title_in_header_survives_cleanup(self):
         e=extract(FIXTURE.read_text().replace('<h1>','<header><h1>').replace('</h1>','</h1></header>'),URL,SOURCE)
         self.assertIsNotNone(e)
@@ -117,13 +119,15 @@ class DatabaseClientTests(unittest.IsolatedAsyncioTestCase):
         def handler(r):
             calls.append(r)
             if r.url.path.endswith('/event_sources') and r.method=='GET':return httpx.Response(200,json=[{'event_id':'event-1'}])
+            if r.url.path.endswith('/hackathons') and r.method=='GET':return httpx.Response(200,json=[{'id':'event-1','title':'“Fixture Hackathon”','start_date':'2026-11-21','official_source_url':URL}])
             if r.method=='PATCH':return httpx.Response(200,json=[{'id':'event-1'}])
             return httpx.Response(200,json=[])
         with patch.dict('os.environ',{'SUPABASE_URL':'https://example.supabase.co','SUPABASE_SERVICE_ROLE_KEY':'test-only'}):store=Store()
         await store.client.aclose();store.client=httpx.AsyncClient(base_url='https://example.supabase.co/rest/v1/',transport=httpx.MockTransport(handler))
         e=extract(FIXTURE.read_text(),URL,SOURCE);verify(e,SOURCE)
-        self.assertEqual(await store.save(e,'source-1','abc'),'event-1')
-        self.assertEqual(calls[1].method,'PATCH');self.assertEqual(calls[1].url.params['id'],'eq.event-1')
+        result=await store.save(e,'source-1','abc')
+        self.assertEqual(result['id'],'event-1')
+        self.assertEqual(calls[2].method,'PATCH');self.assertEqual(calls[2].url.params['id'],'eq.event-1')
         await store.close()
 
 if __name__=='__main__':unittest.main()

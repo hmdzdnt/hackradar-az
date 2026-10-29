@@ -27,3 +27,19 @@ test('archive, stats, calendar overlap and Baku midnight',()=>{
  assert.equal(bakuToday(now),'2026-10-29');
 });
 test('unsafe hyperlinks cannot become executable URLs',()=>{for(const u of ['javascript:alert(1)','data:text/html,<script>','http://foo.test','https://user@foo.test'])assert.equal(safeHref(u),null);assert.equal(safeHref('https://example.org/'),'https://example.org/');});
+
+test('exact event times determine ongoing and archive feeds without a rebuild',()=>{
+ const during=new Date('2026-10-28T13:59:59Z'),ended=new Date('2026-10-28T14:00:00Z');
+ const timed={...event,start_date:'2026-10-28',end_date:'2026-10-28',start_at:'2026-10-28T10:00:00+04:00',end_at:'2026-10-28T18:00:00+04:00'};
+ assert.equal(filterEvents([timed],{lifecycle:'ongoing'},during).length,1);
+ assert.equal(filterEvents([timed],{},ended).length,0);
+ assert.equal(filterEvents([timed],{archive:'only'},ended).length,1);
+ assert.equal(filterEvents([timed],{archive:'all'},ended).length,1);
+ assert.equal(filterEvents([timed],{lifecycle:'archived'},ended).length,1);
+ assert.equal(registration(timed,ended),'closed');
+});
+test('date-only events remain active through their Baku end date',()=>{
+ const sameDay={...event,start_date:'2026-10-28',end_date:'2026-10-28'};
+ assert.equal(filterEvents([sameDay],{},new Date('2026-10-28T23:59:59+04:00')).length,1);
+ assert.equal(filterEvents([sameDay],{},new Date('2026-10-29T00:00:00+04:00')).length,0);
+});

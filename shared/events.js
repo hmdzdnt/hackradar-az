@@ -1,7 +1,21 @@
 export const fold = value => String(value ?? '').normalize('NFKC').toLocaleLowerCase('az-AZ');
 export const bakuToday = (now = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baku', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+export function eventLifecycle(event, now = new Date()) {
+  const boundary=(instant,day,end=false)=> {
+    if (instant && Number.isFinite(Date.parse(instant))) return Date.parse(instant);
+    if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+    const midnight=Date.parse(day+'T00:00:00+04:00');
+    return Number.isFinite(midnight) ? midnight+(end?86400000:0) : null;
+  };
+  const end=boundary(event.end_at,event.end_date||event.start_date,true);
+  const start=boundary(event.start_at,event.start_date);
+  if (end!=null && end<=now.getTime()) return 'archived';
+  if (start!=null && start<=now.getTime()) return 'ongoing';
+  if (start!=null) return 'upcoming';
+  return event.archived ? 'archived' : 'unknown';
+}
 export function registration(event, now = new Date()) {
-  if ((event.end_date || event.start_date) < bakuToday(now) || (event.registration_deadline && new Date(event.registration_deadline) < now)) return 'closed';
+  if (eventLifecycle(event,now)==='archived' || (event.registration_deadline && new Date(event.registration_deadline) < now)) return 'closed';
   if (!event.last_verified_at || now - new Date(event.last_verified_at) > 7 * 86400000) return 'unknown';
   return ['open', 'closed'].includes(event.registration_status) ? event.registration_status : 'unknown';
 }
@@ -22,8 +36,10 @@ export function filterEvents(events, f = {}, now = new Date()) {
     }
     if (f.prize === 'yes' && e.has_prize !== true) return false;
     if (f.prize === 'no' && e.has_prize !== false) return false;
-    if (f.archive !== 'all' && f.archive !== 'only' && (e.archived || (e.end_date || e.start_date) < bakuToday(now))) return false;
-    if (f.archive === 'only' && !(e.archived || (e.end_date || e.start_date) < bakuToday(now))) return false;
+    const life=eventLifecycle(e,now);
+    if (f.lifecycle && f.lifecycle!==life) return false;
+    if (f.archive !== 'all' && f.archive !== 'only' && !f.lifecycle && life==='archived') return false;
+    if (f.archive === 'only' && life!=='archived') return false;
     return true;
   });
 }

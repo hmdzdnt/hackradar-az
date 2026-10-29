@@ -8,10 +8,14 @@
       "beu.edu.az",
       "www.beu.edu.az"
     ],
-    "seeds": [
-      "https://beu.edu.az/en/media/announcements/registration-has-opened-for-the-cybercell-hackathon-organized-by-beu-and-azercell"
-    ],
-    "context": "Azerbaijan"
+    "seeds": [],
+    "context": "Azerbaijan",
+    "key": "beu",
+    "category": "university",
+    "local_venues": {
+      "BEU": "Xırdalan"
+    },
+    "max_pages": 5
   },
   {
     "name": "Bakı Metropoliteni",
@@ -27,7 +31,10 @@
     ],
     "context": "Azerbaijan",
     "enabled": false,
-    "note": "Disabled: article returned HTTP 404 during initial live check."
+    "note": "Disabled: article returned HTTP 404 during initial live check.",
+    "key": "metro",
+    "category": "public_institution",
+    "limitation": "Disabled after HTTP 404. Not currently monitored."
   },
   {
     "name": "SOCAR Hackathon",
@@ -38,6 +45,165 @@
       "hackathon.socar.az"
     ],
     "seeds": [],
-    "context": "Azerbaijan"
+    "context": "Azerbaijan",
+    "key": "socar",
+    "category": "official_event",
+    "max_pages": 2
+  },
+  {
+    "key": "ada",
+    "name": "ADA University",
+    "url": "https://www.ada.edu.az/en/news-and-events",
+    "hosts": [
+      "www.ada.edu.az"
+    ],
+    "category": "university",
+    "kind": "html",
+    "trusted": true,
+    "enabled": true,
+    "max_pages": 6
+  },
+  {
+    "key": "aztu",
+    "name": "Azərbaycan Texniki Universiteti",
+    "url": "https://www.aztu.edu.az/az/news",
+    "hosts": [
+      "www.aztu.edu.az"
+    ],
+    "category": "university",
+    "kind": "html",
+    "trusted": true,
+    "enabled": true,
+    "max_pages": 6
+  },
+  {
+    "key": "azercell",
+    "name": "Azercell",
+    "url": "https://www.azercell.com/az/about-us/press-releases/news.html",
+    "hosts": [
+      "www.azercell.com"
+    ],
+    "category": "technology_company",
+    "kind": "html",
+    "trusted": true,
+    "enabled": true,
+    "max_pages": 6
+  },
+  {
+    "key": "ict",
+    "name": "İnformasiya Texnologiyaları İnstitutu",
+    "url": "https://ict.az/az/news",
+    "hosts": [
+      "ict.az"
+    ],
+    "category": "public_research",
+    "kind": "html",
+    "trusted": true,
+    "enabled": true,
+    "max_pages": 6
+  },
+  {
+    "key": "sup",
+    "name": "SUP.VC",
+    "url": "https://sup.vc/",
+    "hosts": [
+      "sup.vc"
+    ],
+    "category": "accelerator",
+    "kind": "html",
+    "trusted": true,
+    "enabled": true,
+    "max_pages": 6
+  },
+  {
+    "key": "edu",
+    "name": "Elm və Təhsil Nazirliyi",
+    "url": "https://edu.gov.az/az/news-and-updates",
+    "hosts": [
+      "edu.gov.az"
+    ],
+    "category": "public_institution",
+    "kind": "html",
+    "trusted": true,
+    "enabled": true,
+    "max_pages": 6
+  },
+  {
+    "key": "idda",
+    "name": "İnnovasiya və Rəqəmsal İnkişaf Agentliyi",
+    "url": "https://www.idda.az/az/news",
+    "hosts": [
+      "www.idda.az"
+    ],
+    "kind": "html",
+    "trusted": true,
+    "enabled": false,
+    "limitation": "DNS resolution failed in this environment; not monitored until a successful access review.",
+    "category": "innovation_or_public"
+  },
+  {
+    "key": "bhos",
+    "name": "Bakı Ali Neft Məktəbi",
+    "url": "https://bhos.edu.az/en/news",
+    "hosts": [
+      "bhos.edu.az"
+    ],
+    "kind": "html",
+    "trusted": true,
+    "enabled": false,
+    "limitation": "DNS resolution failed in this environment; not monitored until a successful access review.",
+    "category": "university"
+  },
+  {
+    "key": "asoiu",
+    "name": "Azərbaycan Dövlət Neft və Sənaye Universiteti",
+    "url": "https://asoiu.edu.az/az/news",
+    "hosts": [
+      "asoiu.edu.az"
+    ],
+    "kind": "html",
+    "trusted": true,
+    "enabled": false,
+    "limitation": "HTTP 404 on inspected news path; a working endpoint is required.",
+    "category": "university"
+  },
+  {
+    "key": "unec",
+    "name": "Azərbaycan Dövlət İqtisad Universiteti",
+    "url": "https://unec.edu.az/feed/",
+    "hosts": [
+      "unec.edu.az"
+    ],
+    "kind": "rss",
+    "trusted": true,
+    "enabled": false,
+    "limitation": "HTTP 401 during public access check; no authentication bypass attempted.",
+    "category": "university"
+  },
+  {
+    "key": "mincom",
+    "name": "Rəqəmsal İnkişaf və Nəqliyyat Nazirliyi",
+    "url": "https://mincom.gov.az/az/media/xeberler",
+    "hosts": [
+      "mincom.gov.az"
+    ],
+    "kind": "html",
+    "trusted": true,
+    "enabled": false,
+    "limitation": "Access policy restriction encountered; no bypass attempted.",
+    "category": "innovation_or_public"
+  },
+  {
+    "key": "sabah",
+    "name": "SABAH.HUB",
+    "url": "https://www.sabahhub.com/",
+    "hosts": [
+      "www.sabahhub.com"
+    ],
+    "kind": "html",
+    "trusted": true,
+    "enabled": false,
+    "limitation": "DNS resolution failed in this environment; not monitored until a successful access review.",
+    "category": "innovation_or_public"
   }
 ]

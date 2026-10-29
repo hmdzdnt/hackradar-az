@@ -5,6 +5,7 @@ const db = new PGlite();
 try {
  await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;');
  await db.exec(await readFile(new URL('../supabase/migrations/001_initial.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/002_discovery_quality.sql',import.meta.url),'utf8'));
  const sample = (fingerprint,published)=>db.query(`INSERT INTO hackathons (fingerprint,title,start_date,official_source_url,verified,published,last_verified_at) VALUES ($1,$2,'2027-01-01','https://university.example.org/event',$3,$3,now()) RETURNING id`,[fingerprint,'Fixture test — never published externally',published]);
  const publicId=(await sample('published-fixture',true)).rows[0].id;
  await sample('private-fixture',false);
@@ -22,5 +23,11 @@ try {
  assert.equal((await db.query('SELECT archived FROM hackathons WHERE id=$1',[publicId])).rows[0].archived,true);
  await db.exec('SET ROLE anon');
  assert.equal((await db.query('SELECT registration_status FROM public_hackathons')).rows[0].registration_status,'closed');
+ await db.exec('RESET ROLE');
+ await assert.rejects(db.query("INSERT INTO hackathons(fingerprint,title,start_date,end_date,official_source_url) VALUES ('expired-new','Expired fixture','2020-01-01','2020-01-02','https://example.org/event')"),'Expired new rows blocked');
+ const phase=await db.query("SELECT event_lifecycle('2026-10-28','2026-10-28','2026-10-28T10:00:00+04:00','2026-10-28T18:00:00+04:00','2026-10-28T18:00:00+04:00') as phase");
+ assert.equal(phase.rows[0].phase,'archived','Exact end instant archives on the same day');
+ assert.equal((await db.query("SELECT event_lifecycle('2026-10-28','2026-10-28',null,null,'2026-10-28T23:59:59+04:00') as phase")).rows[0].phase,'ongoing','Date-only event lasts through its local end date');
+ assert.equal((await db.query('SELECT count(*)::int as n FROM hackathons')).rows[0].n,2,'Historical records retained');
  console.log('Database: migration, RLS, private fields, write protection, constraints, uniqueness and archival passed (embedded PostgreSQL).');
 } finally { await db.close(); }

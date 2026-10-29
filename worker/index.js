@@ -1,4 +1,4 @@
-import { filterEvents, statistics } from '../shared/events.js';
+import { filterEvents, statistics, eventLifecycle, registration } from '../shared/events.js';
 import { answerQuestion } from './assistant.js';
 
 const json = (data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','X-Content-Type-Options':'nosniff',...headers}});
@@ -31,11 +31,11 @@ async function cachedEvents(env,ctx,fetcher) {
 }
 function filters(params) {
   const f=Object.fromEntries(params);
-  if (Object.keys(f).some(k=>!['q','city','format','topic','status','from','to','age','prize','archive'].includes(k))) throw new Error('Unknown filter');
+  if (Object.keys(f).some(k=>!['q','city','format','topic','status','from','to','age','prize','archive','lifecycle'].includes(k))) throw new Error('Unknown filter');
   if (Object.values(f).some(v=>v.length>200) || (f.age && (!/^\d{1,3}$/.test(f.age) || +f.age>100))) throw new Error('Invalid filter');
   for (const field of ['from','to']) if (f[field] && (!/^\d{4}-\d{2}-\d{2}$/.test(f[field]) || !Number.isFinite(Date.parse(f[field])) || new Date(f[field]).toISOString().slice(0,10)!==f[field])) throw new Error('Invalid date');
   if (f.from && f.to && f.from>f.to) throw new Error('Invalid date range');
-  for (const [k,allowed] of Object.entries({format:['onsite','online','hybrid'],status:['open','closed','unknown'],prize:['yes','no'],archive:['all','only']})) if (f[k] && !allowed.includes(f[k])) throw new Error('Invalid filter');
+  for (const [k,allowed] of Object.entries({format:['onsite','online','hybrid'],status:['open','closed','unknown'],prize:['yes','no'],archive:['all','only'],lifecycle:['upcoming','ongoing','archived']})) if (f[k] && !allowed.includes(f[k])) throw new Error('Invalid filter');
   return f;
 }
 async function readQuestion(request) {
@@ -79,6 +79,9 @@ export async function handle(request,env,ctx={waitUntil(){}},fetcher=fetch) {
       if(!quota.allowed) return respond({error:'Sorğu limiti dolub. Bir qədər sonra yenidən yoxlayın.'},429,{'Retry-After':'60'});
     }
     const data=await cachedEvents(env,ctx,fetcher);
+    // Recompute time-driven fields even when the underlying database rows are edge-cached.
+    const now=new Date();
+    data.events=data.events.map(e=>{const life=eventLifecycle(e,now);return {...e,lifecycle:life,archived:life==='archived',registration_status:registration(e,now)};});
     if(question) {
       const active=filterEvents(data.events);
       const events=active.length ? active : data.events;
